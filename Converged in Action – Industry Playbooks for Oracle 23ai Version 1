@@ -108,6 +108,8 @@ Deploy a predictive model without external ML tools
 Build simple data-to-insight workflow in APEX
 Launch an intelligent fraud monitoring prototype in under 3 hours
 “As a DBA, this was my first time using Graph and AutoML inside Oracle itself. I didn’t expect I could do ML without Python or Jupyter.” – Beta Tester from Banking Partner
+
+
 3.2 Retail & E-Commerce – Real-Time Personalization, Zero ETL
 Lab Objective: Deliver hyper-personalized shopping and reduce ETL through native intelligence in Oracle 23ai.
 
@@ -168,83 +170,297 @@ Gain comfort with JSON + Vector data in one schema
 Understand how user behavior data maps to graph
 Build low-latency recommendations without separate ML infra
 Launch real-time, no-ETL personalized shopping app in 3.5 hrs
+
+
+
 3.3 Healthcare – Building a Patient 360 & Predictive Diagnostics Lab
-"In healthcare, every data point can mean life or death — accuracy and privacy are non-negotiable."
-This lab addresses building a unified Patient 360 view and implementing predictive diagnostics while prioritizing stringent compliance and data privacy practices.
-
-Compliance & Data Privacy Considerations:
-
-Ensure all patient data is de-identified before ingestion.
-Use Oracle's Transparent Data Encryption (TDE) and Data Redaction features.
-Leverage Virtual Private Database (VPD) to enforce row-level security.
-Audit all data access and changes using Oracle Audit Vault.
-Comply with HIPAA, GDPR, and other local healthcare regulations.
-These features ensure that while building powerful, converged healthcare data models, privacy and regulatory mandates remain uncompromised.
-
-Lab Objective: Enable holistic patient views and predictive diagnostics using converged data: JSON, Graph, Vector, and AutoML.
+Lab Objective: Create a unified patient 360 view and predictive diagnostics model using Oracle 23ai, while strictly enforcing healthcare compliance and data privacy.
 
 Key Challenges:
 
-Fragmented patient records across systems
-Complexity in integrating genomic, imaging, and clinical notes
-Regulatory constraints on data access
+Fragmented patient data from multiple sources
+Integration of semi-structured clinical notes, genomic data, and imaging metadata
+Regulatory compliance for privacy and data protection (HIPAA, GDPR)
 Oracle 23ai Solutions:
 
-JSON Duality to manage semi-structured clinical notes and structured EHR data
-Graph DB for patient relationships, referral patterns, and care pathways
-Vector Search for image similarity and genomic sequence matching
+JSON Duality Views for managing structured and unstructured clinical data
+Graph DB for patient-provider relationships and care pathways
+Vector Search for imaging and genomic sequence similarity
 AutoML for predictive risk scoring and diagnosis assistance
+Data Security: Transparent Data Encryption (TDE), Virtual Private Database (VPD), and audit logging for compliance
 🧪 Guided Tech Do-Along
 
 Lab Duration: ~3.5 Hours
 
-Step-by-step Highlights:
+Prerequisites:
 
-Create patient, encounter, and clinical notes tables with JSON duality
-Load anonymized sample patient and imaging metadata
-Build a property graph linking patients, providers, and diagnosis codes
-Use Vector search for imaging similarity queries
-Train AutoML models to predict patient readmission risk
-Implement VPD and audit logging for compliance
+Oracle Database 23ai with JSON, Graph, Vector, AutoML enabled
+Oracle APEX workspace for dashboarding
+Sample anonymized healthcare datasets (patients, clinical notes, images metadata)
+SQL Developer or OCI Cloud Shell
+Step 1: Setup User and Schema
+
+CREATE USER healthlab IDENTIFIED BY Health123;
+GRANT CONNECT, RESOURCE, CREATE VIEW TO healthlab;
+ALTER SESSION SET CURRENT_SCHEMA = healthlab;
+Step 2: Create Core Tables Using JSON Duality
+
+CREATE TABLE patient (
+  patient_id NUMBER PRIMARY KEY,
+  name VARCHAR2(100),
+  dob DATE,
+  demographics JSON
+);
+
+CREATE TABLE clinical_notes (
+  note_id NUMBER PRIMARY KEY,
+  patient_id NUMBER,
+  note_content CLOB,
+  metadata JSON,
+  CONSTRAINT fk_patient FOREIGN KEY (patient_id) REFERENCES patient(patient_id)
+);
+
+CREATE TABLE imaging_data (
+  image_id NUMBER PRIMARY KEY,
+  patient_id NUMBER,
+  image_metadata JSON,
+  embedding VECTOR(1536),
+  CONSTRAINT fk_patient_img FOREIGN KEY (patient_id) REFERENCES patient(patient_id)
+);
+Step 3: Load Anonymized Data
+
+Download anonymized patient records, clinical notes, and imaging metadata from provided repo.
+Use SQL Developer or SQL*Loader to bulk insert JSON and vector data.
+Step 4: Create Property Graph to Model Care Relationships
+
+CREATE PROPERTY GRAPH healthcare_pg
+  VERTEX TABLES (
+    patient KEY (patient_id),
+    clinical_notes KEY (note_id),
+    imaging_data KEY (image_id)
+  )
+  EDGE TABLES (
+    has_note FROM patient TO clinical_notes,
+    has_image FROM patient TO imaging_data
+  );
+Run sample queries:
+
+SELECT * FROM PGQL_QUERY('healthcare_pg', 
+  'MATCH (p:patient)-[:has_note]->(n:clinical_notes) WHERE p.patient_id = 101 RETURN p, n');
+Step 5: Vector Search on Imaging Data
+
+SELECT image_id, image_metadata
+FROM imaging_data
+WHERE embedding ANN VECTOR_OF_INTEREST LIMIT 5;
+Use embeddings for similarity search to find related patient images for diagnostics.
+
+Step 6: Build AutoML Predictive Model for Readmission Risk
+
+Prepare training data combining JSON attributes and vector features, then:
+
+BEGIN
+  DBMS_DATA_MINING.CREATE_MODEL(
+    model_name          => 'PATIENT_READMISSION_MODEL',
+    mining_function     => DBMS_DATA_MINING.CLASSIFICATION,
+    data_table_name     => 'patient_risk_data',
+    case_id_column_name => 'patient_id',
+    target_column_name  => 'readmission_flag',
+    settings_table_name => 'health_settings');
+END;
+Step 7: Implement Security and Compliance Controls
+
+Enable Transparent Data Encryption (TDE) on healthcare tables.
+Create Virtual Private Database (VPD) policies to restrict row access based on user roles.
+Configure audit logging on patient data access.
+Step 8: Create APEX Dashboard for Patient Insights
+
+Build patient 360 dashboard showing demographics, recent notes, imaging thumbnails, and risk scores.
+Add filters by demographics, diagnosis codes, and predicted risk.
+Expected Outcomes:
+
+Learn to combine JSON, Graph, Vector, and AutoML for healthcare data convergence.
+Understand implementation of healthcare compliance using Oracle security features.
+Build end-to-end predictive and exploratory healthcare application in ~3.5 hours.
+
+
+
 3.4 Manufacturing – Smart Factory and Supply Chain Digital Twin
-Lab Objective: Build a real-time digital twin of factory operations and supply chain flows to optimize production and reduce downtime.
+Lab Objective: Build a digital twin of manufacturing processes and supply chain networks for real-time monitoring and predictive maintenance using Oracle 23ai.
 
 Key Challenges:
 
-Disparate sensor data (IoT) in various formats and speeds
-Supply chain visibility with many partners
-Predictive maintenance for critical machinery
+Integration of heterogeneous IoT sensor data
+Supply chain complexity with multiple stakeholders
+Need for predictive analytics to avoid downtime
 Oracle 23ai Solutions:
 
-JSON Duality for IoT sensor metadata and event data
-Graph for supply chain relationships and process workflows
-Vector to analyze time-series sensor patterns
-AutoML for predictive maintenance and anomaly detection
+JSON Duality to store IoT sensor data and metadata
+Graph to model supply chain and factory process relationships
+Vector Search for analyzing sensor time-series and anomaly detection
+AutoML for predictive maintenance
 🧪 Guided Tech Do-Along
 
-Model machines, sensors, and production lines as graphs
-Ingest JSON-formatted IoT data streams into tables
-Use Vector capabilities to find pattern anomalies in sensor data
-Train AutoML models for downtime prediction
-Dashboard factory health in Oracle APEX
+Lab Duration: ~3 Hours
+
+Step 1: Setup User and Schema
+
+CREATE USER manuflab IDENTIFIED BY Manu123;
+GRANT CONNECT, RESOURCE TO manuflab;
+ALTER SESSION SET CURRENT_SCHEMA = manuflab;
+Step 2: Create Tables for IoT Data & Supply Chain
+
+CREATE TABLE machine (
+  machine_id NUMBER PRIMARY KEY,
+  metadata JSON
+);
+
+CREATE TABLE sensor_data (
+  sensor_id NUMBER PRIMARY KEY,
+  machine_id NUMBER,
+  reading_time TIMESTAMP,
+  sensor_readings JSON,
+  embedding VECTOR(1536),
+  CONSTRAINT fk_machine FOREIGN KEY (machine_id) REFERENCES machine(machine_id)
+);
+
+CREATE TABLE supply_chain_partner (
+  partner_id NUMBER PRIMARY KEY,
+  partner_info JSON
+);
+
+CREATE TABLE supply_chain_flow (
+  flow_id NUMBER PRIMARY KEY,
+  from_partner NUMBER,
+  to_partner NUMBER,
+  product_id NUMBER,
+  CONSTRAINT fk_from FOREIGN KEY (from_partner) REFERENCES supply_chain_partner(partner_id),
+  CONSTRAINT fk_to FOREIGN KEY (to_partner) REFERENCES supply_chain_partner(partner_id)
+);
+Step 3: Load Sensor & Partner Data
+
+Use sample JSON-formatted sensor and partner data from lab repo.
+Use SQL*Loader or batch inserts.
+Step 4: Create Graph for Factory and Supply Chain
+
+CREATE PROPERTY GRAPH manuf_pg
+  VERTEX TABLES (
+    machine KEY (machine_id),
+    supply_chain_partner KEY (partner_id)
+  )
+  EDGE TABLES (
+    flow FROM supply_chain_flow TO supply_chain_flow
+  );
+Step 5: Vector Search on Sensor Readings for Anomaly Detection
+
+SELECT sensor_id, sensor_readings
+FROM sensor_data
+WHERE embedding ANN SENSOR_VECTOR LIMIT 5;
+Use vector similarity to detect sensor anomalies or failure patterns.
+
+Step 6: Build AutoML Predictive Maintenance Model
+
+Prepare labeled sensor data indicating failure events.
+BEGIN
+  DBMS_DATA_MINING.CREATE_MODEL(
+    model_name          => 'MAINTENANCE_MODEL',
+    mining_function     => DBMS_DATA_MINING.CLASSIFICATION,
+    data_table_name     => 'sensor_data',
+    case_id_column_name => 'sensor_id',
+    target_column_name  => 'failure_flag',
+    settings_table_name => 'maint_settings');
+END;
+Step 7: Build Oracle APEX Monitoring Dashboard
+
+Visualize machine health, sensor anomalies, and supply chain status.
+Include alerts triggered by maintenance model predictions.
+Expected Outcomes:
+
+Hands-on experience with IoT data management using JSON duality and Vector.
+Graph modeling of supply chain partners and flows.
+Predictive maintenance insights driven fully in-database.
+
+
+
+
 3.5 Telecommunications – Network Analytics & Customer Experience
-Lab Objective: Leverage converged database features to analyze complex network topology and deliver personalized customer experiences.
+Lab Objective: Analyze telecom network topology and customer behavior using converged Oracle 23ai features to improve service and reduce churn.
 
 Key Challenges:
 
-Complex, large-scale network graphs
-Real-time customer service analytics
+Complex network graphs with many nodes and edges
+Real-time analysis of call records and customer interactions
 Fraud detection and churn prediction
 Oracle 23ai Solutions:
 
-Graph DB to model network elements, call routing, and device relationships
-JSON Duality to manage call records and customer metadata
-Vector Search for similarity in user behavior patterns
-AutoML to detect network anomalies and predict customer churn
+Graph to model telecom network elements and routing
+JSON Duality for call detail records and customer metadata
+Vector Search for clustering user behavior patterns
+AutoML for network anomaly detection and churn prediction
 🧪 Guided Tech Do-Along
 
-Construct network topology graphs from telecom data
-Load call detail records in JSON format
-Use Vector embeddings to cluster similar user behaviors
-Train AutoML models for churn and fraud prediction
-Build real-time monitoring dashboards
+Lab Duration: ~3 Hours
+
+Step 1: Setup User and Schema
+
+CREATE USER telecomlab IDENTIFIED BY Telco123;
+GRANT CONNECT, RESOURCE TO telecomlab;
+ALTER SESSION SET CURRENT_SCHEMA = telecomlab;
+Step 2: Create Tables for Network and Call Data
+
+CREATE TABLE network_node (
+  node_id NUMBER PRIMARY KEY,
+  node_info JSON
+);
+
+CREATE TABLE call_records (
+  call_id NUMBER PRIMARY KEY,
+  caller_id NUMBER,
+  callee_id NUMBER,
+  call_time TIMESTAMP,
+  call_metadata JSON,
+  fraud_flag NUMBER
+);
+
+CREATE TABLE customer_profile (
+  customer_id NUMBER PRIMARY KEY,
+  profile_data JSON,
+  embedding VECTOR(1536)
+);
+Step 3: Load Network and Call Data
+
+Use sample JSON datasets of telecom nodes, calls, and customer info.
+Step 4: Create Telecom Network Graph
+
+CREATE PROPERTY GRAPH telecom_pg
+  VERTEX TABLES (network_node KEY (node_id))
+  EDGE TABLES (
+    call_edge FROM call_records TO call_records
+  );
+Step 5: Vector Search for User Behavior Clustering
+
+SELECT customer_id, profile_data
+FROM customer_profile
+WHERE embedding ANN USER_VECTOR LIMIT 5;
+Step 6: Build AutoML Models
+
+Fraud detection model using call_records table.
+Churn prediction model using customer_profile data.
+BEGIN
+  DBMS_DATA_MINING.CREATE_MODEL(
+    model_name          => 'FRAUD_DETECTION_MODEL',
+    mining_function     => DBMS_DATA_MINING.CLASSIFICATION,
+    data_table_name     => 'call_records',
+    case_id_column_name => 'call_id',
+    target_column_name  => 'fraud_flag',
+    settings_table_name => 'fraud_settings');
+END;
+Step 7: Build Real-Time Monitoring Dashboard in APEX
+
+Visualize network health, flagged calls, and churn risk.
+Include filters for geography, time, and customer segment.
+Expected Outcomes:
+
+Master telecom network modeling with Graph DB.
+Analyze call data with JSON and Vector.
+Deploy ML-driven fraud and churn analytics fully in-database.
+Launch monitoring dashboards for operational insight.
