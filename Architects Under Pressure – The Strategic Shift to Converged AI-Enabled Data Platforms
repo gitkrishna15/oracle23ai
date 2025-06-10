@@ -4,7 +4,9 @@ Chapter 1: Architects Under Pressure, The Strategic Shift to Converged AI-Enable
 
 The modern solution architect is not just a technologist; they are a systems strategist. They navigate a maze of isolated solutions, changing business needs, and ongoing cycles of innovation. The challenge is to deliver secure, scalable, and smart solutions that reach the market quickly, are easy to maintain, and work in a multi-modal, multi-cloud environment.
 
-"In 2025, architects are not merely building systems; they are coordinating a mix of disconnected tools, expected to function in unison." Across different industries, architecture diagrams have become cluttered and less effective. Here is what they usually include:
+"In 2025, architects are not merely building systems; they are coordinating a mix of disconnected tools, expected to function in unison." 
+Across different industries, architecture diagrams have become cluttered and less effective. 
+Here is what they usually include:
 
 - PostgreSQL or MySQL for core OLTP
 - MongoDB or Couchbase for document workloads
